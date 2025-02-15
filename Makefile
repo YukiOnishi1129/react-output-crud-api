@@ -9,3 +9,5 @@ backend-ssh:
 
 db-sh:
 	docker exec -it $(POSTGRES_HOST) sh
+
+# psql -h 127.0.0.1 -p 5432 -U user REACT_OUTPUT_CRUD_API_DB
