@@ -14,15 +14,23 @@ func (h *TodoHandler) RegisterHandlers(r *mux.Router) {
 	todoRouter.HandleFunc("", h.ListTodo).Methods("GET")
 	todoRouter.HandleFunc("/{id}", h.GetTodo).Methods("GET")
 	todoRouter.HandleFunc("", h.CreateTodo).Methods("POST")
+	todoRouter.HandleFunc("", optionsPostHandler).Methods("OPTIONS")
 	todoRouter.HandleFunc("/{id}", h.UpdateTodo).Methods("PUT")
 	todoRouter.HandleFunc("/{id}", h.DeleteTodo).Methods("DELETE")
-	todoRouter.HandleFunc("/{id}", optionsHandler).Methods("OPTIONS")
+	todoRouter.HandleFunc("/{id}", optionsDeleteHandler).Methods("OPTIONS")
 }
 
 
-func optionsHandler(w http.ResponseWriter, r *http.Request) {
+func optionsDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", os.Getenv("FRONTEND_URL"))
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func optionsPostHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", os.Getenv("FRONTEND_URL"))
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	w.WriteHeader(http.StatusCreated)
 }
