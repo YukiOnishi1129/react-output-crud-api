@@ -1,34 +1,45 @@
+import { Controller } from "react-hook-form";
+
 import { useTodoContext } from "../../../hooks/useTodoContext";
 import { BaseLayout } from "../../organisms";
-import { CommonButton, InputForm, TextArea } from "../../atoms";
+import { InputFormSection, TextAreaSection } from "../../molecules";
+import { CommonButton } from "../../atoms";
 import { useTodoCreateTemplate } from "./useTodoCreateTemplate";
 import styles from "./style.module.css";
 
 export const TodoCreateTemplate = () => {
   const { addTodo } = useTodoContext();
-  const {
-    inputTitle,
-    inputContent,
-    handleChangeTitle,
-    handleChangeContent,
-    handleCreateTodo,
-  } = useTodoCreateTemplate({ addTodo });
+  const { control, errors, handleAddSubmit } = useTodoCreateTemplate({
+    addTodo,
+  });
 
   return (
     <BaseLayout title={"Create Todo"}>
-      <form className={styles.container} onSubmit={handleCreateTodo}>
+      <form className={styles.container} onSubmit={handleAddSubmit}>
         <div className={styles.area}>
-          <InputForm
-            value={inputTitle}
-            placeholder={"Title"}
-            onChange={handleChangeTitle}
+          <Controller
+            name="title"
+            render={({ field }) => (
+              <InputFormSection
+                placeholder={"Title"}
+                errorMessage={errors.title?.message}
+                {...field}
+              />
+            )}
+            control={control}
           />
         </div>
         <div className={styles.area}>
-          <TextArea
-            value={inputContent}
-            placeholder={"Content"}
-            onChange={handleChangeContent}
+          <Controller
+            name="content"
+            render={({ field }) => (
+              <TextAreaSection
+                placeholder={"Content"}
+                errorMessage={errors.content?.message}
+                {...field}
+              />
+            )}
+            control={control}
           />
         </div>
         <div className={styles.area}>

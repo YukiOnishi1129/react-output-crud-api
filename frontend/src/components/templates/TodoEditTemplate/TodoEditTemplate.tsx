@@ -1,37 +1,48 @@
+import { Controller } from "react-hook-form";
+
 import { useTodoEditTemplate } from "./useTodoEditTemplate";
 import { useTodoContext } from "../../../hooks/useTodoContext";
 import { BaseLayout } from "../../organisms";
-import { CommonButton, TextArea, InputForm } from "../../atoms";
+import { InputFormSection, TextAreaSection } from "../../molecules";
+import { CommonButton } from "../../atoms";
 import styles from "./style.module.css";
 
 export const TodoEditTemplate = () => {
   const { originTodoList, updateTodo } = useTodoContext();
 
-  const {
-    todo,
-    inputTitle,
-    inputContent,
-    handleChangeTitle,
-    handleChangeContent,
-    handleUpdateTodo,
-  } = useTodoEditTemplate({ originTodoList, updateTodo });
+  const { todo, control, errors, handleEditSubmit } = useTodoEditTemplate({
+    originTodoList,
+    updateTodo,
+  });
 
   return (
     <BaseLayout title={"TodoEdit"}>
       {!!todo && (
-        <form className={styles.container} onSubmit={handleUpdateTodo}>
+        <form className={styles.container} onSubmit={handleEditSubmit}>
           <div className={styles.area}>
-            <InputForm
-              value={inputTitle}
-              placeholder={"Title"}
-              onChange={handleChangeTitle}
+            <Controller
+              name="title"
+              render={({ field }) => (
+                <InputFormSection
+                  placeholder={"Title"}
+                  errorMessage={errors.title?.message}
+                  {...field}
+                />
+              )}
+              control={control}
             />
           </div>
           <div className={styles.area}>
-            <TextArea
-              value={inputContent}
-              placeholder={"Content"}
-              onChange={handleChangeContent}
+            <Controller
+              name="content"
+              render={({ field }) => (
+                <TextAreaSection
+                  placeholder={"Content"}
+                  errorMessage={errors.content?.message}
+                  {...field}
+                />
+              )}
+              control={control}
             />
           </div>
           <div className={styles.area}>

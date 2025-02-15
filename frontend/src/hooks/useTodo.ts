@@ -12,7 +12,7 @@ export const useTodo = () => {
    * Todo新規登録処理
    */
   const addTodo = useCallback(
-    (title: string, content: string) => {
+    (title: string, content?: string) => {
       const nextUniqueId = uniqueId + 1;
       const newTodo = [
         ...originTodoList,
@@ -34,7 +34,7 @@ export const useTodo = () => {
    * Todo更新処理
    */
   const updateTodo = useCallback(
-    (id: number, title: string, content: string) => {
+    (id: number, title: string, content?: string) => {
       const updatedTodoList = originTodoList.map((todo) => {
         if (id === todo.id) {
           return {
