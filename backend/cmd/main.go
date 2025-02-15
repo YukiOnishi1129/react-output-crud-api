@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	gorm_persistence "github.com/YukiOnishi1129/react-output-crud-api/backend/internal/infrastructure/persistence/gorm"
+	persistence_gorm "github.com/YukiOnishi1129/react-output-crud-api/backend/internal/infrastructure/persistence/gorm"
 	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/interfaces/handler"
 	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/pkg/database"
 	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/usecase"
@@ -21,7 +21,7 @@ func main() {
 		return
 	}
 	r := mux.NewRouter()
-	todoRepository := gorm_persistence.NewTodoRepository(db)
+	todoRepository := persistence_gorm.NewTodoRepository(db)
 	todoUsecase := usecase.NewTodoUseCase(todoRepository)
 	todoHandler := handler.NewTodoHandler(todoUsecase)
 	todoHandler.RegisterHandlers(r)

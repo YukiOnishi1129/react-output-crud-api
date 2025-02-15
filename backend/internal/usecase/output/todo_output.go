@@ -3,7 +3,7 @@ package output
 import (
 	"time"
 
-	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/domain"
+	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/infrastructure/persistence/dto"
 	"github.com/google/uuid"
 )
 
@@ -20,7 +20,7 @@ type TodoListOutput struct {
 	Total int64        `json:"total"`
 }
 
-func NewTodoOutput(todo *domain.Todo) *TodoOutput {
+func NewTodoOutput(todo *dto.TodoOutput) *TodoOutput {
 	return &TodoOutput{
 		ID:        todo.ID,
 		Title:     todo.Title,
@@ -30,13 +30,13 @@ func NewTodoOutput(todo *domain.Todo) *TodoOutput {
 	}
 }
 
-func NewTodoListOutput(todos []*domain.Todo, total int64) *TodoListOutput {
-	outputs := make([]TodoOutput, len(todos))
-	for i, todo := range todos {
-		outputs[i] = *NewTodoOutput(todo)
+func NewTodoListOutput(todos *dto.TodoListOutput) *TodoListOutput {
+	outputs := make([]TodoOutput, len(todos.Todos))
+	for i, todo := range todos.Todos {
+		outputs[i] = *NewTodoOutput(&todo)
 	}
 	return &TodoListOutput{
 		Todos: outputs,
-		Total: total,
+		Total: todos.Total,
 	}
 }
