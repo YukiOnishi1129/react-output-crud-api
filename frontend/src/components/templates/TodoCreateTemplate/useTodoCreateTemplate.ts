@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
 import { NAVIGATION_PATH } from "../../../constants/navigation";
 
+import { createTodo } from "../../../apis/todo";
+
 const schema = z.object({
   title: z
     .string()
@@ -13,13 +15,7 @@ const schema = z.object({
   content: z.string().optional(),
 });
 
-type UseTodoCreateTemplateParams = {
-  addTodo: (title: string, content?: string) => void;
-};
-
-export const useTodoCreateTemplate = ({
-  addTodo,
-}: UseTodoCreateTemplateParams) => {
+export const useTodoCreateTemplate = () => {
   const navigate = useNavigate();
 
   const {
@@ -33,11 +29,14 @@ export const useTodoCreateTemplate = ({
 
   const handleAddSubmit = handleSubmit(
     useCallback(
-      (values: z.infer<typeof schema>) => {
-        addTodo(values.title, values.content);
+      async (values: z.infer<typeof schema>) => {
+        await createTodo({
+          title: values.title,
+          content: values.content,
+        });
         navigate(NAVIGATION_PATH.TOP);
       },
-      [addTodo, navigate]
+      [navigate]
     )
   );
 
