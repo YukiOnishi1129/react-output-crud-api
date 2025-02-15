@@ -3,35 +3,59 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/usecase/todo"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
-
-	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/usecase"
-	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/usecase/input"
 )
 
-type TodoHandlerInterface interface {
-	ListTodo(w http.ResponseWriter, r *http.Request)
-	GetTodo(w http.ResponseWriter, r *http.Request)
-	CreateTodo(w http.ResponseWriter, r *http.Request)
-	UpdateTodo(w http.ResponseWriter, r *http.Request)
-	DeleteTodo(w http.ResponseWriter, r *http.Request)
-}
-
-
 type TodoHandler struct {
-	todoUseCase usecase.TodoUseCase
+	todoUseCase todo.TodoUseCase
 }
 
-func NewTodoHandler(todoUseCase usecase.TodoUseCase) TodoHandlerInterface {
-	return &TodoHandler{todoUseCase: todoUseCase}
+func NewTodoHandler(todoUseCase todo.TodoUseCase) *TodoHandler {
+	return &TodoHandler{
+		todoUseCase: todoUseCase,
+	}
 }
 
-func (h *TodoHandler) ListTodo(w http.ResponseWriter, r *http.Request) {
+// GetTodos は、Todoリストを取得するハンドラーです
+func (h *TodoHandler) GetTodos(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	output, err := h.todoUseCase.ListTodo(ctx)
+	// クエリパラメータの取得
+	input := &todo.GetTodosInput{
+		Limit:  20, // デフォルト値
+		Offset: 0,
+	}
+
+	if limit := r.URL.Query().Get("limit"); limit != "" {
+		if n, err := strconv.Atoi(limit); err == nil {
+			input.Limit = n
+		}
+	}
+
+	if offset := r.URL.Query().Get("offset"); offset != "" {
+		if n, err := strconv.Atoi(offset); err == nil {
+			input.Offset = n
+		}
+	}
+
+	// ユーザーIDの取得（認証ミドルウェアから）
+	userID, ok := ctx.Value("userID").(uuid.UUID)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	input.UserID = userID
+
+	if err := input.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	output, err := h.todoUseCase.GetTodos(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -41,18 +65,26 @@ func (h *TodoHandler) ListTodo(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(output)
 }
 
+// GetTodo は、指定されたTodoを取得するハンドラーです
 func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	vars := mux.Vars(r)
 
 	todoID, err := uuid.Parse(vars["id"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, "invalid todo id", http.StatusBadRequest)
 		return
 	}
 
-	input := &input.GetTodoInput{
+	userID, ok := ctx.Value("userID").(uuid.UUID)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	input := &todo.GetTodoInput{
 		ID:     todoID,
+		UserID: userID,
 	}
 
 	if err := input.Validate(); err != nil {
@@ -60,7 +92,7 @@ func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := h.todoUseCase.GetTodo(ctx, input)
+	output, err := h.todoUseCase.GetTodo(ctx, todoID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -70,14 +102,22 @@ func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(output)
 }
 
+// CreateTodo は、新しいTodoを作成するハンドラーです
 func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var input input.CreateTodoInput
+	var input todo.CreateTodoInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	userID, ok := ctx.Value("userID").(uuid.UUID)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	input.UserID = userID
 
 	if err := input.Validate(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -95,6 +135,7 @@ func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(output)
 }
 
+// UpdateTodo は、指定されたTodoを更新するハンドラーです
 func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	vars := mux.Vars(r)
@@ -105,7 +146,7 @@ func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var input input.UpdateTodoInput
+	var input todo.UpdateTodoInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -127,6 +168,7 @@ func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(output)
 }
 
+// DeleteTodo は、指定されたTodoを削除するハンドラーです
 func (h *TodoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	vars := mux.Vars(r)
@@ -137,8 +179,15 @@ func (h *TodoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	input := &input.DeleteTodoInput{
+	userID, ok := ctx.Value("userID").(uuid.UUID)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	input := &todo.DeleteTodoInput{
 		ID:     todoID,
+		UserID: userID,
 	}
 
 	if err := input.Validate(); err != nil {
@@ -146,10 +195,10 @@ func (h *TodoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.todoUseCase.DeleteTodo(ctx, input); err != nil {
+	if err := h.todoUseCase.DeleteTodo(ctx, todoID); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-}
+} 
