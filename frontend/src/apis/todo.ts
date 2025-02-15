@@ -1,7 +1,7 @@
 import globalAxios from "./globalAxios";
 import {
-  TodoListResponse,
-  TodoResponse,
+  TodoListType,
+  TodoType,
   GetTodoRequest,
   CreateTodoRequest,
   UpdateTodoRequest,
@@ -10,7 +10,7 @@ import {
 
 export const getTodos = async () => {
   try {
-    const response = await globalAxios.get<TodoListResponse>("/todos");
+    const response = await globalAxios.get<TodoListType>("/todos");
     return response.data;
   } catch (error) {
     console.error(error);
@@ -19,9 +19,7 @@ export const getTodos = async () => {
 
 export const getTodo = async (request: GetTodoRequest) => {
   try {
-    const response = await globalAxios.get<TodoResponse>(
-      `/todos/${request.id}`
-    );
+    const response = await globalAxios.get<TodoType>(`/todos/${request.id}`);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -30,7 +28,7 @@ export const getTodo = async (request: GetTodoRequest) => {
 
 export const createTodo = async (request: CreateTodoRequest) => {
   try {
-    const response = await globalAxios.post<TodoResponse>("/todos", request);
+    const response = await globalAxios.post<TodoType>("/todos", request);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -39,13 +37,10 @@ export const createTodo = async (request: CreateTodoRequest) => {
 
 export const updateTodo = async (request: UpdateTodoRequest) => {
   try {
-    const response = await globalAxios.put<TodoResponse>(
-      `/todos/${request.id}`,
-      {
-        title: request.title,
-        content: request.content,
-      }
-    );
+    const response = await globalAxios.put<TodoType>(`/todos/${request.id}`, {
+      title: request.title,
+      content: request.content,
+    });
     return response.data;
   } catch (error) {
     console.error(error);
@@ -54,10 +49,7 @@ export const updateTodo = async (request: UpdateTodoRequest) => {
 
 export const deleteTodo = async (request: DeleteTodoRequest) => {
   try {
-    const response = await globalAxios.delete<TodoResponse>(
-      `/todos/${request.id}`
-    );
-    return response.data;
+    await globalAxios.delete(`/todos/${request.id}`);
   } catch (error) {
     console.error(error);
   }

@@ -1,10 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useForm, Controller } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InputFormSection } from "../../molecules";
 import { BaseLayout, TodoList } from "../../organisms";
-import { useTodoContext } from "../../../hooks/useTodoContext";
+
+import { getTodos, deleteTodo } from "../../../apis/todo";
+import { TodoType } from "../../../types/Todo";
+
 import styles from "./style.module.css";
 
 const schema = z.object({
@@ -12,8 +15,7 @@ const schema = z.object({
 });
 
 export const TodoListTemplate = () => {
-  // コンテキストから状態とロジックを呼び出してコンポーネントにあてがう
-  const { originTodoList, deleteTodo } = useTodoContext();
+  const [todoList, setTodoList] = useState<Array<TodoType>>([]);
 
   const { control, watch } = useForm({
     resolver: zodResolver(schema),
@@ -24,7 +26,7 @@ export const TodoListTemplate = () => {
   /* 表示用TodoList */
   const showTodoList = useMemo(() => {
     const regexp = new RegExp("^" + searchKeyword, "i");
-    return originTodoList.filter((todo) => {
+    return todoList.filter((todo) => {
       // 検索キーワードに部分一致したTodoだけを一覧表示する
       return todo.title.match(regexp);
     });
@@ -32,7 +34,24 @@ export const TodoListTemplate = () => {
     // originTodoListとsearchKeywordの値が変更される度にfilterの検索処理が実行
     // ただし結果が前回と同じならキャッシュを返却し処理は実行されない(無駄な処理を省いている)
     // 詳しくはuseMemoを調べてください。
-  }, [originTodoList, searchKeyword]);
+  }, [todoList, searchKeyword]);
+
+  const fetchTodoList = useCallback(async () => {
+    const response = await getTodos();
+    if (!response) return;
+
+    setTodoList(response.todos);
+  }, []);
+
+  const handleDeleteTodo = useCallback((id: string, title: string) => {
+    if (window.confirm(`「${title}」のtodoを削除しますか？`)) {
+      deleteTodo({ id });
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTodoList();
+  }, [fetchTodoList]);
 
   return (
     <BaseLayout title={"TodoList"}>
@@ -50,7 +69,7 @@ export const TodoListTemplate = () => {
         {/* Todoリスト一覧表示 */}
         <div className={styles.area}>
           {showTodoList.length > 0 && (
-            <TodoList todoList={showTodoList} handleDeleteTodo={deleteTodo} />
+            <TodoList todoList={showTodoList} onDeleteTodo={handleDeleteTodo} />
           )}
         </div>
       </div>

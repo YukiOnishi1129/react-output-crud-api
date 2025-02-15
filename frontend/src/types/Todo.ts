@@ -1,7 +1,5 @@
-import { ApiResponse } from "./ApiResponse";
-
 export type TodoType = {
-  id: number;
+  id: string;
   title: string;
   content?: string;
   createdAt: string;
@@ -12,10 +10,6 @@ export type TodoListType = {
   todos: Array<TodoType>;
   total: number;
 };
-
-export type TodoListResponse = ApiResponse<TodoListType>;
-
-export type TodoResponse = ApiResponse<TodoType>;
 
 export type GetTodoRequest = {
   id: string;

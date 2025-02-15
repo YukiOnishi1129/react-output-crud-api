@@ -11,6 +11,3 @@ seed:
 
 rollback:
 	go run cmd/rollback/main.go
-
-db-reset:
-	rollback migrate seed

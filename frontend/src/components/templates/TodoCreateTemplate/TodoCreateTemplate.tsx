@@ -1,21 +1,15 @@
-import { Controller } from "react-hook-form";
-
-import { useTodoContext } from "../../../hooks/useTodoContext";
 import { BaseLayout } from "../../organisms";
-import { InputFormSection, TextAreaSection } from "../../molecules";
-import { CommonButton } from "../../atoms";
-import { useTodoCreateTemplate } from "./useTodoCreateTemplate";
-import styles from "./style.module.css";
 
 export const TodoCreateTemplate = () => {
-  const { addTodo } = useTodoContext();
-  const { control, errors, handleAddSubmit } = useTodoCreateTemplate({
-    addTodo,
-  });
+  // const { addTodo } = useTodoContext();
+  // const { control, errors, handleAddSubmit } = useTodoCreateTemplate({
+  //   addTodo,
+  // });
 
   return (
     <BaseLayout title={"Create Todo"}>
-      <form className={styles.container} onSubmit={handleAddSubmit}>
+      <div></div>
+      {/* <form className={styles.container} onSubmit={handleAddSubmit}>
         <div className={styles.area}>
           <Controller
             name="title"
@@ -45,7 +39,7 @@ export const TodoCreateTemplate = () => {
         <div className={styles.area}>
           <CommonButton type="submit">{"Create Todo"}</CommonButton>
         </div>
-      </form>
+      </form> */}
     </BaseLayout>
   );
 };
