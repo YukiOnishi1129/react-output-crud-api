@@ -1,27 +1,10 @@
-import { useParams } from "react-router";
-import { useCallback, useState, useEffect } from "react";
 import { BaseLayout } from "../../organisms";
 import { InputForm, TextArea } from "../../atoms";
-import { getTodo } from "../../../apis/todo";
-import { TodoType } from "../../../types/Todo";
+import { useTodoDetailTemplate } from "./useTodoDetailTemplate";
 import styles from "./style.module.css";
 
 export const TodoDetailTemplate = () => {
-  const { id } = useParams();
-
-  const [todo, setTodo] = useState<TodoType | null>(null);
-
-  const fetchTodo = useCallback(async () => {
-    if (!id) return;
-    const response = await getTodo({ id });
-    if (!response) return;
-
-    setTodo(response);
-  }, [id]);
-
-  useEffect(() => {
-    fetchTodo();
-  }, [fetchTodo]);
+  const { todo } = useTodoDetailTemplate();
 
   return (
     <BaseLayout title={"TodoDetail"}>
