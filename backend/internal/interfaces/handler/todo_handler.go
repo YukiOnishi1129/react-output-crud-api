@@ -12,6 +12,7 @@ import (
 )
 
 type TodoHandlerInterface interface {
+	RegisterHandlers(r *mux.Router)
 	ListTodo(w http.ResponseWriter, r *http.Request)
 	GetTodo(w http.ResponseWriter, r *http.Request)
 	CreateTodo(w http.ResponseWriter, r *http.Request)

@@ -24,12 +24,10 @@ func main() {
 	todoRepository := gorm_persistence.NewTodoRepository(db)
 	todoUsecase := usecase.NewTodoUseCase(todoRepository)
 	todoHandler := handler.NewTodoHandler(todoUsecase)
+	todoHandler.RegisterHandlers(r)
 
-	r.HandleFunc("/todos", todoHandler.ListTodo).Methods("GET")
-	r.HandleFunc("/todos/{id}", todoHandler.GetTodo).Methods("GET")
-	r.HandleFunc("/todos", todoHandler.CreateTodo).Methods("POST")
-	r.HandleFunc("/todos/{id}", todoHandler.UpdateTodo).Methods("PUT")
-	r.HandleFunc("/todos/{id}", todoHandler.DeleteTodo).Methods("DELETE")
+	r.Use(mux.CORSMethodMiddleware(r))
+
 
 	log.Printf("Server started at http://localhost:%s", os.Getenv("BACKEND_CONTAINER_POST"))
 	if err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("BACKEND_CONTAINER_POST")), r); err != nil {
