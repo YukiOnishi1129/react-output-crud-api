@@ -1,31 +1,31 @@
+import { Controller } from "react-hook-form";
+import { InputFormSection } from "../../molecules";
 import { BaseLayout, TodoList } from "../../organisms";
-import { InputForm } from "../../atoms";
-import { useTodoContext } from "../../../hooks/useTodoContext";
+
 import { useTodoListTemplate } from "./useTodoListTemplate";
+
 import styles from "./style.module.css";
 
 export const TodoListTemplate = () => {
-  // コンテキストから状態とロジックを呼び出してコンポーネントにあてがう
-  const { originTodoList, deleteTodo } = useTodoContext();
-
-  const { searchKeyword, showTodoList, handleChangeSearchKeyword } =
-    useTodoListTemplate({ originTodoList });
+  const { control, showTodoList, handleDeleteTodo } = useTodoListTemplate();
 
   return (
     <BaseLayout title={"TodoList"}>
       <div className={styles.container}>
         {/* Todo検索フォームエリア */}
         <div className={styles.area}>
-          <InputForm
-            value={searchKeyword}
-            placeholder={"Search Keyword"}
-            onChange={handleChangeSearchKeyword}
+          <Controller
+            name="keyword"
+            render={({ field }) => (
+              <InputFormSection placeholder={"Search Keyword"} {...field} />
+            )}
+            control={control}
           />
         </div>
         {/* Todoリスト一覧表示 */}
         <div className={styles.area}>
           {showTodoList.length > 0 && (
-            <TodoList todoList={showTodoList} handleDeleteTodo={deleteTodo} />
+            <TodoList todoList={showTodoList} onDeleteTodo={handleDeleteTodo} />
           )}
         </div>
       </div>

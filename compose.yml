@@ -20,6 +20,7 @@ services:
       - BACKEND_CONTAINER_NAME=${BACKEND_CONTAINER_NAME}
       - BACKEND_PORT=${BACKEND_PORT}
       - BACKEND_CONTAINER_POST=${BACKEND_CONTAINER_POST}
+      - FRONTEND_URL=${FRONTEND_URL}
       - "TZ=Asia/Tokyo" # タイムゾーンを日本時刻に設定
 
   db:

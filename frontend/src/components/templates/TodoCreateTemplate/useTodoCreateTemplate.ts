@@ -1,54 +1,48 @@
-import { useState, useCallback, ChangeEvent } from "react";
+import { useCallback } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router";
 import { NAVIGATION_PATH } from "../../../constants/navigation";
 
-type UseTodoCreateTemplateParams = {
-  addTodo: (title: string, content: string) => void;
-};
+import { createTodo } from "../../../apis/todo";
 
-export const useTodoCreateTemplate = ({
-  addTodo,
-}: UseTodoCreateTemplateParams) => {
+const schema = z.object({
+  title: z
+    .string()
+    .min(1, "タイトルは必須です。")
+    .max(10, "10文字以内で入力してください。"),
+  content: z.string().optional(),
+});
+
+export const useTodoCreateTemplate = () => {
   const navigate = useNavigate();
 
-  /* local state */
-  const [inputTitle, setInputTitle] = useState("");
-  const [inputContent, setInputContent] = useState("");
-  /**
-   * 「title」変更処理
-   */
-  const handleChangeTitle = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => setInputTitle(e.target.value),
-    []
-  );
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: { title: "", content: undefined },
+  });
 
-  /**
-   * 「content」変更処理
-   */
-  const handleChangeContent = useCallback(
-    (e: ChangeEvent<HTMLTextAreaElement>) => setInputContent(e.target.value),
-    []
-  );
-
-  /**
-   * Todo追加処理
-   */
-  const handleCreateTodo = useCallback(
-    (e: ChangeEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      if (inputTitle !== "" && inputContent !== "") {
-        addTodo(inputTitle, inputContent);
+  const handleAddSubmit = handleSubmit(
+    useCallback(
+      async (values: z.infer<typeof schema>) => {
+        await createTodo({
+          title: values.title,
+          content: values.content,
+        });
         navigate(NAVIGATION_PATH.TOP);
-      }
-    },
-    [addTodo, inputTitle, inputContent, navigate]
+      },
+      [navigate]
+    )
   );
 
   return {
-    inputTitle,
-    inputContent,
-    handleChangeTitle,
-    handleChangeContent,
-    handleCreateTodo,
+    control,
+    errors,
+    handleAddSubmit,
   };
 };

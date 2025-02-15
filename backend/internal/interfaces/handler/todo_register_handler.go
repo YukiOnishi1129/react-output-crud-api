@@ -11,6 +11,8 @@ func (h *TodoHandler) RegisterHandlers(r *mux.Router) {
 	todoRouter.HandleFunc("", h.ListTodo).Methods("GET")
 	todoRouter.HandleFunc("/{id}", h.GetTodo).Methods("GET")
 	todoRouter.HandleFunc("", h.CreateTodo).Methods("POST")
+	todoRouter.HandleFunc("", optionsPostHandler).Methods("OPTIONS")
 	todoRouter.HandleFunc("/{id}", h.UpdateTodo).Methods("PUT")
 	todoRouter.HandleFunc("/{id}", h.DeleteTodo).Methods("DELETE")
+	todoRouter.HandleFunc("/{id}", optionsDeleteHandler).Methods("OPTIONS")
 }
