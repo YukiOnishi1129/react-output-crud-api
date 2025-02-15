@@ -1,11 +1,11 @@
-import { useMemo, useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { getTodo, updateTodo } from "../../../apis/todo";
 import { NAVIGATION_PATH } from "../../../constants/navigation";
-import { TodoType } from "../../../types/Todo";
 
 const schema = z.object({
   title: z
@@ -15,46 +15,47 @@ const schema = z.object({
   content: z.string().optional(),
 });
 
-type UseTodoEditTemplateParams = {
-  originTodoList: Array<TodoType>;
-  updateTodo: (id: number, title: string, content?: string) => void;
-};
-
-export const useTodoEditTemplate = ({
-  originTodoList,
-  updateTodo,
-}: UseTodoEditTemplateParams) => {
-  const navigate = useNavigate();
-
+export const useTodoEditTemplate = () => {
   const { id } = useParams();
-
-  const todo = useMemo(
-    () => originTodoList.find((todo) => String(todo.id) === id),
-    [id, originTodoList]
-  );
+  const navigate = useNavigate();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: { title: todo?.title, content: todo?.content },
   });
+
+  const fetchTodo = useCallback(async () => {
+    if (!id) return;
+    const response = await getTodo({ id });
+    if (!response) return;
+    setValue("title", response.title);
+    setValue("content", response.content);
+  }, [id, setValue]);
 
   const handleEditSubmit = handleSubmit(
     useCallback(
-      (values: z.infer<typeof schema>) => {
-        if (!todo) return;
-        updateTodo(todo.id, values.title, values.content);
+      async (values: z.infer<typeof schema>) => {
+        if (!id) return;
+        await updateTodo({
+          id,
+          title: values.title,
+          content: values.content,
+        });
         navigate(NAVIGATION_PATH.TOP);
       },
-      [updateTodo, navigate, todo]
+      [navigate, id]
     )
   );
 
+  useEffect(() => {
+    fetchTodo();
+  }, [fetchTodo]);
+
   return {
-    todo,
     control,
     errors,
     handleEditSubmit,
