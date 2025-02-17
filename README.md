@@ -144,7 +144,7 @@ docker ps
 
 各イメージに対応する コンテナ ID を確認
 
-- バックエンド: react_output_crud_api_backend
+- バックエンド: react-output-crud-api-backend
 - DB: postgres:17.2
 
 以下のコマンドで各コンテナのログを確認
