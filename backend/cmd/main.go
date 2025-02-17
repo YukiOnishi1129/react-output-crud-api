@@ -10,8 +10,8 @@ import (
 	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/interfaces/handler"
 	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/pkg/database"
 	"github.com/YukiOnishi1129/react-output-crud-api/backend/internal/usecase"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -26,20 +26,21 @@ func main() {
 	todoUsecase := usecase.NewTodoUseCase(todoRepository)
 	todoHandler := handler.NewTodoHandler(todoUsecase)
 
-	corsOptions := handlers.CORS(
-		handlers.AllowedOrigins([]string{os.Getenv("FRONTEND_URL")}), // 環境変数からオリジンを取得
-		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}), // 許可するHTTPメソッド
-		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}), // 許可するヘッダー
-	)
-
-	// CORSミドルウェアをルーターに適用
-	r.Use(corsOptions)
-
 	todoHandler.RegisterHandlers(r)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{os.Getenv("FRONTEND_URL")}, // フロントエンドのオリジン
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	})
+
+	handler := c.Handler(r)
+
 
 
 	log.Printf("Server started at http://localhost:%s", os.Getenv("BACKEND_CONTAINER_POST"))
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("BACKEND_CONTAINER_POST")), r); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("BACKEND_CONTAINER_POST")), handler); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
 	
