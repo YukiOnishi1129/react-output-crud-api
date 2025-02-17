@@ -10,9 +10,9 @@ export const useTodoDetailTemplate = () => {
   const fetchTodo = useCallback(async () => {
     if (!id) return;
     const response = await getTodo({ id });
-    if (!response) return;
+    if (!response.data) return;
 
-    setTodo(response);
+    setTodo(response.data);
   }, [id]);
 
   useEffect(() => {
